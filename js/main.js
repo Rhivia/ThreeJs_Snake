@@ -59,7 +59,7 @@ function keyDown(evt) {
 }
 
 
-// Retirar "keyUp(e event listener)" e o "keyDown" acima e descomentar esse para movimentação continua
+//Retirar "keyUp(e event listener)" e o "keyDown" acima e descomentar esse para movimentação continua
 // function keyDown(evt) {
 //     console.log(evt.key);
 //     let tecla = evt.key;
@@ -176,6 +176,8 @@ function checkColision() {
             }
             if (object.geometry.type == "BoxGeometry"){
                 console.log("cubo!");
+                collidableList.splice(collidableList.indexOf(object), 1);
+                scene.remove(object);
             }
         }
     })
