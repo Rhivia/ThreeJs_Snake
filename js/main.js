@@ -1,6 +1,7 @@
 // Global variables
 let aspect = window.innerWidth / window.innerHeight;
 let moveUp = 0, moveDown = 0, keyLeft = 0, keyRight = 0;
+let collidableList = [];
 
 // Configurações de câmera
 let fovy = 75;
@@ -38,18 +39,17 @@ window.addEventListener('resize', function () {
     camera.updateProjectionMatrix();
 });
 
-// Adiciona os eventos necessários para movimentação do jogador
-// function keyUp(evt) {
-//     let tecla = evt.key;
-//     tecla = tecla.toLowerCase();
-//     if (tecla === "w") return moveDown = 0;
-//     if (tecla === "s") return moveUp = 0;
-//     if (tecla === "a") return keyLeft = 0;
-//     if (tecla === "d") return keyRight = 0;
-// }
+//Adiciona os eventos necessários para movimentação do jogador
+function keyUp(evt) {
+    let tecla = evt.key;
+    tecla = tecla.toLowerCase();
+    if (tecla === "w") return moveDown = 0;
+    if (tecla === "s") return moveUp = 0;
+    if (tecla === "a") return keyLeft = 0;
+    if (tecla === "d") return keyRight = 0;
+}
 
 function keyDown(evt) {
-    console.log(evt.key);
     let tecla = evt.key;
     tecla = tecla.toLowerCase();
     if (tecla === "w") return moveDown = -0.5;
@@ -121,8 +121,10 @@ const cubes = [
 ];
 
 let player = makeInstance(boxGeometry, facedMaterial, 0, 0, 3);
+collidableList.splice(collidableList.indexOf(player), 1);
 let apple = makeRandomApple();
 const ground = makeInstance(groundGeometry, groundMaterial, 0, -1, 0);
+
 
 // ^^^^ Hardcoded Variables ^^^^
 // ##################################################################################
@@ -135,6 +137,7 @@ function makeInstance(geometry, material, x, y, z) {
     cube.position.y = y;
     cube.position.z = z;
 
+    collidableList.push(cube);
     return cube;
 }
 
@@ -143,6 +146,7 @@ function makeRandomApple() {
     let z = Math.ceil((Math.random() * 18) - 9);
     let apple = makeInstance(sphereGeometry, appleMaterial, x, 0, z);
     scene.add(apple);
+    collidableList.push(apple);
     return apple;
 }
 
@@ -154,6 +158,27 @@ function createLights() {
     var pointLight = new THREE.PointLight(0xffffff, 1, 100);
     pointLight.position.set(5, 5, 5);
     scene.add(pointLight);
+}
+
+function checkColision() {
+    // Pra cada objeto da lista de colidiveis
+    collidableList.forEach(object => {
+        // Se as posições forem iguais (da pra melhorar aqui)
+        if (player.position.x == object.position.x && player.position.z == object.position.z) {
+            console.log("hit!");
+            // Caso seja uma maçã
+            if (object.geometry.type == "SphereGeometry") {
+                console.log("maçã!");
+                // Remove da lista de colidiveis e da cena
+                collidableList.splice(collidableList.indexOf(object), 1);
+                scene.remove(object);
+                makeRandomApple();
+            }
+            if (object.geometry.type == "BoxGeometry"){
+                console.log("cubo!");
+            }
+        }
+    })
 }
 
 function start() {
@@ -207,6 +232,7 @@ function update() {
     if (player.position.x >= 10 || player.position.x <= -10) {
         player.position.x *= -1;
     }
+    checkColision()
 
     player.position.z += deep;
     // Limita o player dentro do ground    
@@ -214,6 +240,7 @@ function update() {
     if (player.position.z >= 9.5 || player.position.z <= -9.5) {
         player.position.z *= -1;
     }
+    checkColision();
 
     cubes.map((cube) => {
         // FIX COLLISION
