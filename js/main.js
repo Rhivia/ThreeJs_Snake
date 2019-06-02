@@ -124,6 +124,7 @@ let player = makeInstance(boxGeometry, facedMaterial, 0, 0, 3);
 collidableList.splice(collidableList.indexOf(player), 1);
 let apple = makeRandomApple();
 const ground = makeInstance(groundGeometry, groundMaterial, 0, -1, 0);
+collidableList.splice(collidableList.indexOf(ground), 1);
 
 
 // ^^^^ Hardcoded Variables ^^^^
