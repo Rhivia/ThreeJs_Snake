@@ -39,14 +39,14 @@ window.addEventListener('resize', function () {
 });
 
 // Adiciona os eventos necessários para movimentação do jogador
-function keyUp(evt) {
-    let tecla = evt.key;
-    tecla = tecla.toLowerCase();
-    if (tecla === "w") return moveDown = 0;
-    if (tecla === "s") return moveUp = 0;
-    if (tecla === "a") return keyLeft = 0;
-    if (tecla === "d") return keyRight = 0;
-}
+// function keyUp(evt) {
+//     let tecla = evt.key;
+//     tecla = tecla.toLowerCase();
+//     if (tecla === "w") return moveDown = 0;
+//     if (tecla === "s") return moveUp = 0;
+//     if (tecla === "a") return keyLeft = 0;
+//     if (tecla === "d") return keyRight = 0;
+// }
 
 function keyDown(evt) {
     console.log(evt.key);
@@ -57,6 +57,41 @@ function keyDown(evt) {
     if (tecla === "a") return keyLeft = -0.5;
     if (tecla === "d") return keyRight = 0.5;
 }
+
+
+// Retirar "keyUp(e event listener)" e o "keyDown" acima e descomentar esse para movimentação continua
+// function keyDown(evt) {
+//     console.log(evt.key);
+//     let tecla = evt.key;
+//     tecla = tecla.toLowerCase();
+//     if (tecla === "w" && moveUp === 0) {
+//         keyLeft = 0;
+//         keyRight = 0;
+//         moveUp = 0;
+//         return moveDown = -0.5;
+//     }
+
+//     if (tecla === "s" && moveDown === 0) {
+//         keyLeft = 0;
+//         keyRight = 0;
+//         moveDown = 0;
+//         return moveUp = 0.5;
+//     }
+
+//     if (tecla === "a" && keyRight === 0) {
+//         moveUp = 0;
+//         keyRight = 0;
+//         moveDown = 0;
+//         return keyLeft = -0.5;
+//     }
+//     if (tecla === "d" && keyLeft === 0) {
+//         keyLeft = 0;
+//         moveUp = 0;
+//         moveDown = 0;
+//         return keyRight = 0.5;
+//     }
+// }
+
 
 window.addEventListener("keyup", keyUp);
 window.addEventListener("keydown", keyDown);
