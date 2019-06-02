@@ -40,18 +40,22 @@ window.addEventListener('resize', function () {
 
 // Adiciona os eventos necessários para movimentação do jogador
 function keyUp(evt) {
-    if (evt.key === "w") return moveDown = 0;
-    if (evt.key === "s") return moveUp = 0;
-    if (evt.key === "a") return keyLeft = 0;
-    if (evt.key === "d") return keyRight = 0;
+    let tecla = evt.key;
+    tecla = tecla.toLowerCase();
+    if (tecla === "w") return moveDown = 0;
+    if (tecla === "s") return moveUp = 0;
+    if (tecla === "a") return keyLeft = 0;
+    if (tecla === "d") return keyRight = 0;
 }
 
 function keyDown(evt) {
     console.log(evt.key);
-    if (evt.key === "w") return moveDown = -0.5;
-    if (evt.key === "s") return moveUp = 0.5;
-    if (evt.key === "a") return keyLeft = -0.5;
-    if (evt.key === "d") return keyRight = 0.5;
+    let tecla = evt.key;
+    tecla = tecla.toLowerCase();
+    if (tecla === "w") return moveDown = -0.5;
+    if (tecla === "s") return moveUp = 0.5;
+    if (tecla === "a") return keyLeft = -0.5;
+    if (tecla === "d") return keyRight = 0.5;
 }
 
 window.addEventListener("keyup", keyUp);
@@ -60,12 +64,14 @@ window.addEventListener("keydown", keyDown);
 // Create objects and place them on the scene
 // Geometries
 let boxGeometry = new THREE.BoxGeometry(1, 1, 1);
+let sphereGeometry = new THREE.SphereGeometry(0.5, 32, 32);
 let groundGeometry = new THREE.BoxGeometry(21, 1, 20);
 
 // Materials
 let outlineMaterial = new THREE.MeshLambertMaterial({ color: 0x00ff00, wireframe: true });
 let facedMaterial = new THREE.MeshLambertMaterial({ color: 0x00ff00 });
 let groundMaterial = new THREE.MeshLambertMaterial({ color: 0000000 });
+let appleMaterial = new THREE.MeshLambertMaterial({ color: '#d30a0a' });
 
 // Objects
 const cubes = [
@@ -80,6 +86,7 @@ const cubes = [
 ];
 
 let player = makeInstance(boxGeometry, facedMaterial, 0, 0, 3);
+let apple = makeRandomApple();
 const ground = makeInstance(groundGeometry, groundMaterial, 0, -1, 0);
 
 // ^^^^ Hardcoded Variables ^^^^
@@ -95,6 +102,15 @@ function makeInstance(geometry, material, x, y, z) {
 
     return cube;
 }
+
+function makeRandomApple() {
+    let x = Math.ceil((Math.random() * 20) - 10);
+    let z = Math.ceil((Math.random() * 18) - 9);
+    let apple = makeInstance(sphereGeometry, appleMaterial, x, 0, z);
+    scene.add(apple);
+    return apple;
+}
+
 
 function createLights() {
     var ambientLght = new THREE.AmbientLight(0x404040);
@@ -151,12 +167,12 @@ function update() {
     }
 
     player.position.x += hor;
-     // Limita o player dentro do ground    
+    // Limita o player dentro do ground    
     ////////////HARDCODED//////////////
     if (player.position.x >= 10 || player.position.x <= -10) {
         player.position.x *= -1;
     }
-    
+
     player.position.z += deep;
     // Limita o player dentro do ground    
     ////////////HARDCODED//////////////
