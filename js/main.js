@@ -39,27 +39,6 @@ window.addEventListener('resize', function () {
     camera.updateProjectionMatrix();
 });
 
-// Adiciona os eventos necessários para movimentação do jogador
-// O movimento acontece somente quando as teclas são pressionadas
-//function keyUp(evt) {
-//    let tecla = evt.key;
-//    tecla = tecla.toLowerCase();
-//    if (tecla === "w") return moveDown = 0;
-//    if (tecla === "s") return moveUp = 0;
-//    if (tecla === "a") return keyLeft = 0;
-//    if (tecla === "d") return keyRight = 0;
-//}
-
-//function keyDown(evt) {
-//    let tecla = evt.key;
-//    tecla = tecla.toLowerCase();
-//    if (tecla === "w") return moveDown = -0.5;
-//    if (tecla === "s") return moveUp = 0.5;
-//    if (tecla === "a") return keyLeft = -0.5;
-//    if (tecla === "d") return keyRight = 0.5;
-//}
-
-
 // Retirar "keyUp(e event listener)" e o "keyDown" acima e descomentar esse para movimentação continua
 // O movimento acontece o tempo todo, o jogador apenas altera a direção da cobra
 function keyDown(evt) {
@@ -102,13 +81,14 @@ window.addEventListener("keydown", keyDown);
 // Geometries
 let boxGeometry = new THREE.BoxGeometry(1, 1, 1);
 let sphereGeometry = new THREE.SphereGeometry(0.5, 32, 32);
-let groundGeometry = new THREE.BoxGeometry(21, 1, 20);
+var floorGeometry = new THREE.PlaneGeometry(21, 21, 10, 10);
 
 // Materials
 let outlineMaterial = new THREE.MeshLambertMaterial({ color: 0x00ff00, wireframe: true });
 let facedMaterial = new THREE.MeshLambertMaterial({ color: 0x00ff00 });
 let groundMaterial = new THREE.MeshLambertMaterial({ color: '#13b201' });
 let appleMaterial = new THREE.MeshStandardMaterial({ color: '#d30a0a' });
+var floorMaterial = new THREE.MeshBasicMaterial({ color: 0x444444, side: THREE.DoubleSide });
 
 // Objects
 const gameObjects = [
@@ -117,11 +97,15 @@ const gameObjects = [
 ];
 
 let player = makeInstance(boxGeometry, facedMaterial, 0, 0, 3);
+let playerBody = [makeInstance(boxGeometry, facedMaterial, 0, 0, 5)];
 collidableList.splice(collidableList.indexOf(player), 1);
 let apple = makeRandomApple();
-const ground = makeInstance(groundGeometry, groundMaterial, 0, -1, 0);
-collidableList.splice(collidableList.indexOf(ground), 1);
 
+
+var floor = new THREE.Mesh(floorGeometry, floorMaterial);
+floor.position.y = -0.5;
+floor.rotation.x = Math.PI / 2;
+scene.add(floor);
 
 // ^^^^ Hardcoded Variables ^^^^
 // ##################################################################################
@@ -147,11 +131,11 @@ function makeRandomApple() {
     let x = Math.ceil((Math.random() * 20) - 10);
     let z = Math.ceil((Math.random() * 18) - 9);
     let apple = makeInstance(sphereGeometry, appleMaterial, x, 0, z);
+    
     scene.add(apple);
     collidableList.push(apple);
     return apple;
 }
-
 
 function createLights() {
     // var ambientLght = new THREE.AmbientLight(0x404040);
@@ -163,26 +147,42 @@ function createLights() {
     scene.add(pointLight);
 }
 
+function hitou(gameObject) {
+    let boxRadius = 0.8;
+    let appleRadius = 0.5;
+    let parte1 = Math.pow((gameObject.position.x - player.position.x), 2) + Math.pow((player.position.z - gameObject.position.z), 2);
+    let parte2;
+
+    if (gameObject.geometry.type == "SphereGeometry") {
+        parte2 = Math.pow((boxRadius + appleRadius), 2);
+    } else {
+        parte2 = Math.pow((boxRadius * 2), 2);
+    }
+
+    if (parte1 <= parte2) return true;
+}
+
 function checkColision() {
     // Pra cada objeto da lista de colidiveis
-    collidableList.forEach(object => {
+
+    collidableList.forEach((gameObject) => {
         // Se as posições forem iguais (da pra melhorar aqui)
-        if (player.position.x == object.position.x && player.position.z == object.position.z) {
+        if (hitou(gameObject)) {
             console.log("hit!");
             // Caso seja uma maçã
-            if (object.geometry.type == "SphereGeometry") {
-                console.log("maçã!");
+            if (gameObject.geometry.type == "SphereGeometry") {
+                scene.remove(gameObject);
                 // Remove da lista de colidiveis e da cena
-                collidableList.splice(collidableList.indexOf(object), 1);
-                scene.remove(object);
+                console.log(collidableList.splice(collidableList.indexOf(gameObject), 1));
+                
                 makeRandomApple();
             }
 
             // Outro cubo, ou parte do corpo da cobra
-            if (object.geometry.type == "BoxGeometry"){
+            if (gameObject.geometry.type == "BoxGeometry") {
                 console.log("cubo!");
-                collidableList.splice(collidableList.indexOf(object), 1);
-                scene.remove(object);
+                collidableList.splice(collidableList.indexOf(gameObject), 1);
+                scene.remove(gameObject);
             }
         }
     })
@@ -191,7 +191,7 @@ function checkColision() {
 function start() {
     //###########################################
     // Add created objects to the scene
-    scene.add(ground);
+    // scene.add(ground);
     scene.add(player);
     gameObjects.map((cube) => {
         scene.add(cube)
@@ -217,8 +217,15 @@ function start() {
 //###########################################
 // vvvv Update Game Transforms vvvv
 function update() {
+
     // Atualiza controles e movimento de camera
     controls.update();
+
+
+    playerBody[0].matrix.setPosition(player.position);
+    for(let i = 0; i < playerBody.length - 1; i ++){
+
+    }
 
     // Adiciona frame a cada execução
     frame++;
@@ -246,6 +253,7 @@ function update() {
     if (player.position.z >= 9.5 || player.position.z <= -9.5) {
         player.position.z *= -1;
     }
+
     checkColision();
 
     // Atualiza Camera para seguir o Player
