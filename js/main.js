@@ -173,8 +173,8 @@ function checkColision() {
             if (gameObject.geometry.type == "SphereGeometry") {
                 scene.remove(gameObject);
                 // Remove da lista de colidiveis e da cena
-                console.log(collidableList.splice(collidableList.indexOf(gameObject), 1));
-                
+                collidableList.splice(collidableList.indexOf(gameObject), 1);
+                playerBody.unshift(makeInstance(boxGeometry, outlineMaterial, 0, 0, 0));
                 makeRandomApple();
             }
 
@@ -224,7 +224,9 @@ function update() {
 
     playerBody[0].matrix.setPosition(player.position);
     for(let i = 0; i < playerBody.length - 1; i ++){
-
+        //
+        // TODO
+        //
     }
 
     // Adiciona frame a cada execução
