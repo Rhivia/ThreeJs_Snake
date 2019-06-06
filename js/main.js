@@ -10,7 +10,8 @@ let far = 1000;
 
 // Posição inicial do PLAYER
 let hor = 0;
-let deep = 0;
+let deep = 3;
+let antigaPos;
 
 // Para cálculo de fisica e velocidade
 let frame = 0;
@@ -42,7 +43,6 @@ window.addEventListener('resize', function () {
 // Retirar "keyUp(e event listener)" e o "keyDown" acima e descomentar esse para movimentação continua
 // O movimento acontece o tempo todo, o jogador apenas altera a direção da cobra
 function keyDown(evt) {
-    console.log(evt.key);
     let tecla = evt.key;
     tecla = tecla.toLowerCase();
     if (tecla === "w" && moveUp === 0) {
@@ -91,16 +91,9 @@ let appleMaterial = new THREE.MeshStandardMaterial({ color: '#d30a0a' });
 var floorMaterial = new THREE.MeshBasicMaterial({ color: 0x444444, side: THREE.DoubleSide });
 
 // Objects
-const gameObjects = [
-    makeInstance(boxGeometry, outlineMaterial, 0, 0, 1),
-    makeInstance(boxGeometry, outlineMaterial, -2, 0, 2),
-];
-
-let player = makeInstance(boxGeometry, facedMaterial, 0, 0, 3);
-let playerBody = [makeInstance(boxGeometry, facedMaterial, 0, 0, 5)];
+let player = [makeInstance(boxGeometry, facedMaterial, hor, 0, deep)];
 collidableList.splice(collidableList.indexOf(player), 1);
 let apple = makeRandomApple();
-
 
 var floor = new THREE.Mesh(floorGeometry, floorMaterial);
 floor.position.y = -0.5;
@@ -131,16 +124,13 @@ function makeRandomApple() {
     let x = Math.ceil((Math.random() * 20) - 10);
     let z = Math.ceil((Math.random() * 18) - 9);
     let apple = makeInstance(sphereGeometry, appleMaterial, x, 0, z);
-    
+
     scene.add(apple);
     collidableList.push(apple);
     return apple;
 }
 
 function createLights() {
-    // var ambientLght = new THREE.AmbientLight(0x404040);
-    // scene.add(ambientLght);
-
     var pointLight = new THREE.PointLight(0xffffff, 1, 500);
     pointLight.position.set(0, 10, 0);
     pointLight.castShadow = true;
@@ -148,9 +138,9 @@ function createLights() {
 }
 
 function hitou(gameObject) {
-    let boxRadius = 0.8;
-    let appleRadius = 0.5;
-    let parte1 = Math.pow((gameObject.position.x - player.position.x), 2) + Math.pow((player.position.z - gameObject.position.z), 2);
+    let boxRadius = 0.6;
+    let appleRadius = 0.4;
+    let parte1 = Math.pow((gameObject.position.x - player[0].position.x), 2) + Math.pow((player[0].position.z - gameObject.position.z), 2);
     let parte2;
 
     if (gameObject.geometry.type == "SphereGeometry") {
@@ -162,11 +152,10 @@ function hitou(gameObject) {
     if (parte1 <= parte2) return true;
 }
 
+let comeu = false;
 function checkColision() {
     // Pra cada objeto da lista de colidiveis
-
     collidableList.forEach((gameObject) => {
-        // Se as posições forem iguais (da pra melhorar aqui)
         if (hitou(gameObject)) {
             console.log("hit!");
             // Caso seja uma maçã
@@ -174,28 +163,41 @@ function checkColision() {
                 scene.remove(gameObject);
                 // Remove da lista de colidiveis e da cena
                 collidableList.splice(collidableList.indexOf(gameObject), 1);
-                playerBody.unshift(makeInstance(boxGeometry, outlineMaterial, 0, 0, 0));
+                comeu = true;
                 makeRandomApple();
             }
 
             // Outro cubo, ou parte do corpo da cobra
             if (gameObject.geometry.type == "BoxGeometry") {
-                console.log("cubo!");
                 collidableList.splice(collidableList.indexOf(gameObject), 1);
                 scene.remove(gameObject);
             }
         }
-    })
+    });
+}
+
+function growPlayer() {
+    console.log("player pos ");
+    console.log(player[0].position);
+    
+    let newPlayerBody = makeInstance(boxGeometry, facedMaterial, player[0].position.x - 1, 0, player[0].position.z - 1);
+    player.push(newPlayerBody);
+    scene.add(newPlayerBody);
+}
+
+function updatePlayerBody() {
+    if (player[1]){
+        console.log(player[1].position);
+        for (let i = 1; i < player.length; i++) {
+            player[i].position = player.position + [1, 1, 1];
+        }
+    }
 }
 
 function start() {
     //###########################################
     // Add created objects to the scene
-    // scene.add(ground);
-    scene.add(player);
-    gameObjects.map((cube) => {
-        scene.add(cube)
-    });
+    scene.add(player[0]);
 
     //###########################################
     // Create the lighs
@@ -221,14 +223,6 @@ function update() {
     // Atualiza controles e movimento de camera
     controls.update();
 
-
-    playerBody[0].matrix.setPosition(player.position);
-    for(let i = 0; i < playerBody.length - 1; i ++){
-        //
-        // TODO
-        //
-    }
-
     // Adiciona frame a cada execução
     frame++;
     time = frame / 100;
@@ -237,29 +231,42 @@ function update() {
     hor = (keyLeft + keyRight) * SPEED;
     deep = (moveUp + moveDown) * SPEED;
 
+    // let novaPosicao = [];
+    // novaPosicao[0] = hor;
+    // novaPosicao[1] = deep;
+
+    // player[0].matrix.setPosition();
+
     if (hor !== 0 && deep !== 0) {
         hor *= COS_45;
         deep *= COS_45;
     }
 
-    player.position.x += hor;
-    // Limita o player dentro do ground    
-    ////////////HARDCODED//////////////
-    if (player.position.x >= 10 || player.position.x <= -10) {
-        player.position.x *= -1;
-    }
-
-    player.position.z += deep;
-    // Limita o player dentro do ground    
-    ////////////HARDCODED//////////////
-    if (player.position.z >= 9.5 || player.position.z <= -9.5) {
-        player.position.z *= -1;
-    }
-
     checkColision();
 
-    // Atualiza Camera para seguir o Player
-    camera.lookAt(player.position.x, 0, player.position.z);
+    if (comeu) {
+        growPlayer();
+        comeu = false;
+    }
+
+    updatePlayerBody();
+
+    player[0].position.x += hor;
+    // Limita o player[0] dentro do ground    
+    ////////////HARDCODED//////////////
+    if (player[0].position.x >= 10 || player[0].position.x <= -10) {
+        player[0].position.x *= -1;
+    }
+
+    player[0].position.z += deep;
+    // Limita o player[0] dentro do ground    
+    ////////////HARDCODED//////////////
+    if (player[0].position.z >= 9.5 || player[0].position.z <= -9.5) {
+        player[0].position.z *= -1;
+    }
+
+    // Atualiza Camera para seguir o Player[0]
+    camera.lookAt(player[0].position.x, 0, player[0].position.z);
 }
 
 //###########################################
