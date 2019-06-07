@@ -19,6 +19,7 @@ let time = 0;
 
 const SPEED = 0.2;
 const COS_45 = Math.cos(Math.PI * 0.25);
+let comeu = false;
 
 // Instanciamento de objetos para exibição
 let scene = new THREE.Scene();
@@ -27,6 +28,7 @@ const canvas = document.querySelector('#canvas');
 const renderer = new THREE.WebGLRenderer({
     canvas,
     alpha: true,
+    antialias: true
 });
 // var controls = new THREE.TrackballControls( camera, renderer.domElement );
 var controls = new THREE.OrbitControls(camera, renderer.domElement);
@@ -85,10 +87,10 @@ var floorGeometry = new THREE.PlaneGeometry(21, 21, 10, 10);
 
 // Materials
 let outlineMaterial = new THREE.MeshLambertMaterial({ color: 0x00ff00, wireframe: true });
-let facedMaterial = new THREE.MeshLambertMaterial({ color: 0x00ff00 });
+let facedMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff });
 let groundMaterial = new THREE.MeshLambertMaterial({ color: '#13b201' });
 let appleMaterial = new THREE.MeshStandardMaterial({ color: '#d30a0a' });
-var floorMaterial = new THREE.MeshBasicMaterial({ color: 0x444444, side: THREE.DoubleSide });
+var floorMaterial = new THREE.MeshBasicMaterial({ color: 0x294251, side: THREE.DoubleSide });
 
 // Objects
 let player = [makeInstance(boxGeometry, facedMaterial, hor, 0, deep)];
@@ -140,7 +142,9 @@ function createLights() {
 function hitou(gameObject) {
     let boxRadius = 0.6;
     let appleRadius = 0.4;
-    let parte1 = Math.pow((gameObject.position.x - player[0].position.x), 2) + Math.pow((player[0].position.z - gameObject.position.z), 2);
+    let CosenoA = Math.pow((gameObject.position.x - player[0].position.x), 2);
+    let CosenoB = Math.pow((player[0].position.z - gameObject.position.z), 2);
+    let Cosenos = CosenoA + CosenoB;
     let parte2;
 
     if (gameObject.geometry.type == "SphereGeometry") {
@@ -149,11 +153,11 @@ function hitou(gameObject) {
         parte2 = Math.pow((boxRadius * 2), 2);
     }
 
-    if (parte1 <= parte2) return true;
+    if (Cosenos <= parte2) return true;
 }
 
-let comeu = false;
 function checkColision() {
+    let newPlayerBody;
     // Pra cada objeto da lista de colidiveis
     collidableList.forEach((gameObject) => {
         if (hitou(gameObject)) {
@@ -163,6 +167,7 @@ function checkColision() {
                 scene.remove(gameObject);
                 // Remove da lista de colidiveis e da cena
                 collidableList.splice(collidableList.indexOf(gameObject), 1);
+                newPlayerBody = makeInstance(boxGeometry, facedMaterial, player[0].position.x - 1, 0, player[0].position.z - 1)
                 comeu = true;
                 makeRandomApple();
             }
@@ -174,25 +179,22 @@ function checkColision() {
             }
         }
     });
-}
 
-function growPlayer() {
-    console.log("player pos ");
-    console.log(player[0].position);
-    
-    let newPlayerBody = makeInstance(boxGeometry, facedMaterial, player[0].position.x - 1, 0, player[0].position.z - 1);
-    player.push(newPlayerBody);
-    scene.add(newPlayerBody);
-}
-
-function updatePlayerBody() {
-    if (player[1]){
-        console.log(player[1].position);
-        for (let i = 1; i < player.length; i++) {
-            player[i].position = player.position + [1, 1, 1];
-        }
+    if (comeu) {
+        player.push(newPlayerBody);
+        scene.add(newPlayerBody);
+        comeu = false;
     }
 }
+
+// function updatePlayerBody() {
+//     if (player[1]){
+//         console.log(player[1].position);
+//         for (let i = 1; i < player.length; i++) {
+//             player[i].position = player.position + [1, 1, 1];
+//         }
+//     }
+// }
 
 function start() {
     //###########################################
@@ -205,8 +207,8 @@ function start() {
 
     //###########################################
     // Position the camera on the Scene
-    camera.position.z = 10;
-    camera.position.y = 7;
+    camera.position.z = 16;
+    camera.position.y = 10;
     camera.lookAt(0, 0, 0);
     camera.updateProjectionMatrix();
 
@@ -231,25 +233,12 @@ function update() {
     hor = (keyLeft + keyRight) * SPEED;
     deep = (moveUp + moveDown) * SPEED;
 
-    // let novaPosicao = [];
-    // novaPosicao[0] = hor;
-    // novaPosicao[1] = deep;
-
-    // player[0].matrix.setPosition();
-
     if (hor !== 0 && deep !== 0) {
         hor *= COS_45;
         deep *= COS_45;
     }
 
     checkColision();
-
-    if (comeu) {
-        growPlayer();
-        comeu = false;
-    }
-
-    updatePlayerBody();
 
     player[0].position.x += hor;
     // Limita o player[0] dentro do ground    
