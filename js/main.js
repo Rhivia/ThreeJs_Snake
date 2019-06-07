@@ -81,9 +81,9 @@ window.addEventListener("keydown", keyDown);
 
 // Create objects and place them on the scene
 // Geometries
-let boxGeometry = new THREE.BoxGeometry(1, 1, 1);
+let boxGeometry = new THREE.BoxGeometry(2, 2, 2);
 let sphereGeometry = new THREE.SphereGeometry(0.5, 32, 32);
-var floorGeometry = new THREE.PlaneGeometry(21, 21, 10, 10);
+var floorGeometry = new THREE.PlaneGeometry(500, 500, 10, 10);
 
 // Materials
 let outlineMaterial = new THREE.MeshLambertMaterial({ color: 0x00ff00, wireframe: true });
@@ -93,7 +93,7 @@ let appleMaterial = new THREE.MeshStandardMaterial({ color: '#d30a0a' });
 var floorMaterial = new THREE.MeshBasicMaterial({ color: 0x294251, side: THREE.DoubleSide });
 
 // Objects
-let player = [makeInstance(boxGeometry, facedMaterial, hor, 0, deep)];
+let player = [makeInstance(boxGeometry, facedMaterial, hor, 1, deep)];
 collidableList.splice(collidableList.indexOf(player), 1);
 let apple = makeRandomApple();
 
@@ -123,8 +123,8 @@ function makeInstance(geometry, material, x, y, z) {
 }
 
 function makeRandomApple() {
-    let x = Math.ceil((Math.random() * 20) - 10);
-    let z = Math.ceil((Math.random() * 18) - 9);
+    let x = Math.ceil((Math.random() * 500) - 250);
+    let z = Math.ceil((Math.random() * 500) - 250);
     let apple = makeInstance(sphereGeometry, appleMaterial, x, 0, z);
 
     scene.add(apple);
@@ -167,7 +167,7 @@ function checkColision() {
                 scene.remove(gameObject);
                 // Remove da lista de colidiveis e da cena
                 collidableList.splice(collidableList.indexOf(gameObject), 1);
-                newPlayerBody = makeInstance(boxGeometry, facedMaterial, player[0].position.x - 1, 0, player[0].position.z - 1)
+                newPlayerBody = makeInstance(boxGeometry, facedMaterial, player[0].position.x - 1, 1, player[0].position.z - 1)
                 comeu = true;
                 makeRandomApple();
             }
@@ -187,14 +187,6 @@ function checkColision() {
     }
 }
 
-// function updatePlayerBody() {
-//     if (player[1]){
-//         console.log(player[1].position);
-//         for (let i = 1; i < player.length; i++) {
-//             player[i].position = player.position + [1, 1, 1];
-//         }
-//     }
-// }
 
 function start() {
     //###########################################
@@ -207,8 +199,8 @@ function start() {
 
     //###########################################
     // Position the camera on the Scene
-    camera.position.z = 16;
-    camera.position.y = 10;
+    camera.position.z = 25;
+    camera.position.y = 19;
     camera.lookAt(0, 0, 0);
     camera.updateProjectionMatrix();
 
@@ -242,17 +234,17 @@ function update() {
 
     player[0].position.x += hor;
     // Limita o player[0] dentro do ground    
-    ////////////HARDCODED//////////////
-    if (player[0].position.x >= 10 || player[0].position.x <= -10) {
-        player[0].position.x *= -1;
-    }
+    // ////////////HARDCODED//////////////
+    // if (player[0].position.x >= 10 || player[0].position.x <= -10) {
+    //     player[0].position.x *= -1;
+    // }
 
     player[0].position.z += deep;
-    // Limita o player[0] dentro do ground    
-    ////////////HARDCODED//////////////
-    if (player[0].position.z >= 9.5 || player[0].position.z <= -9.5) {
-        player[0].position.z *= -1;
-    }
+    // // Limita o player[0] dentro do ground    
+    // ////////////HARDCODED//////////////
+    // if (player[0].position.z >= 9.5 || player[0].position.z <= -9.5) {
+    //     player[0].position.z *= -1;
+    // }
 
     // Atualiza Camera para seguir o Player[0]
     camera.lookAt(player[0].position.x, 0, player[0].position.z);
